@@ -31,12 +31,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: screenshotController == null
-          ? const MyHomePage(title: 'Flutter Demo Home Page')
-          : Screenshot(
-              child: MyHomePage(title: 'screen shot demo'),
-              controller: screenshotController!,
-            ),
+      home: Screenshotable(child: MyHomePage(title: 'screen shot demo')),
     );
   }
 }
@@ -63,7 +58,6 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   void _incrementCounter() {
-    capture(path: 'test.png');
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below

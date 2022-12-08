@@ -1,16 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/src/widgets/basic.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_experiment/main.dart';
 import 'package:flutter_experiment/screenshotable.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:integration_test/integration_test_driver.dart';
-import 'package:screenshot/screenshot.dart';
-import '../test_driver/main_test.dart' as app;
-import 'package:flutter_driver/flutter_driver.dart';
-import 'package:flutter_driver/driver_extension.dart';
 
 // void main() {
 //   late FlutterDriver driver;
@@ -71,6 +66,43 @@ Future<void> main() async {
       as IntegrationTestWidgetsFlutterBinding;
 
   testWidgets('screenshot', (tester) async {
+    @override
+    Future<Uint8List?> takeScreenshot() async {
+      Uint8List? image;
+
+      try {
+        if (!kIsWeb && Platform.isIOS) {
+          try {
+            var ss =
+                find.byType(Screenshotable).evaluate().first as StatefulElement;
+
+            await tester.pump();
+            image = await (ss.state as ScreenshotableState).captureImage();
+
+            debugPrint('screenshot success');
+          } catch (e) {
+            debugPrint('Screenshot failed $e');
+          }
+        } else {
+          try {
+            if (!kIsWeb && Platform.isAndroid) {
+              await binding.convertFlutterSurfaceToImage();
+            }
+          } catch (e) {
+            // no-op
+          }
+
+          await tester.pump();
+          image =
+              Uint8List.fromList(await binding.takeScreenshot('screenshot'));
+        }
+      } catch (e) {
+        debugPrint('Screenshot failed $e');
+      }
+
+      return image;
+    }
+
     await tester.pumpWidget(MyApp());
     await tester.pumpAndSettle();
     expect(2 + 2, equals(4));
@@ -78,7 +110,16 @@ Future<void> main() async {
     // pattern default android
     await binding.convertFlutterSurfaceToImage();
     await tester.pumpAndSettle();
-    await binding.takeScreenshot('test123');
+    // await binding.takeScreenshot('test1234');
+
+    final image = await takeScreenshot();
+    binding.reportData ??= <String, dynamic>{};
+    binding.reportData!['screenshots'] ??= <dynamic>[];
+    final Map<String, dynamic> data = {
+      'screenshotName': 'testtest123',
+      'bytes': image
+    };
+    (binding.reportData!['screenshots']!).add(data);
 
 // pattern 1
     // await takeScreenShot(screenshotController, 'screenshot/', 'test.png');
@@ -87,12 +128,4 @@ Future<void> main() async {
     // await capture(path: 'test.png');
     // sleep(const Duration(seconds: 3));
   });
-}
-
-Future<void> takeScreenShot(
-  ScreenshotController controller,
-  String path,
-  String fileName,
-) async {
-  final screenshot = await controller.captureAndSave(fileName);
 }
