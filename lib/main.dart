@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:screenshot/screenshot.dart';
+
+import 'screenshotable.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  static final navigatorKey = GlobalKey<NavigatorState>();
+
+  const MyApp({Key? key, this.screenshotController}) : super(key: key);
+
+  final ScreenshotController? screenshotController;
 
   // This widget is the root of your application.
   @override
@@ -24,7 +31,12 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: screenshotController == null
+          ? const MyHomePage(title: 'Flutter Demo Home Page')
+          : Screenshot(
+              child: MyHomePage(title: 'screen shot demo'),
+              controller: screenshotController!,
+            ),
     );
   }
 }
@@ -51,6 +63,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   void _incrementCounter() {
+    capture(path: 'test.png');
     setState(() {
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
