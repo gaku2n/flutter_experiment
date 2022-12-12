@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_experiment/main.dart';
 import 'package:flutter_experiment/screenshotable.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'dart:ui' as ui;
 
 // void main() {
 //   late FlutterDriver driver;
@@ -73,13 +75,31 @@ Future<void> main() async {
       try {
         if (!kIsWeb && Platform.isIOS) {
           try {
-            var ss =
-                find.byType(Screenshotable).evaluate().first as StatefulElement;
+            // var ss =
+            //     find.byType(Screenshotable).evaluate().first as StatefulElement;
 
-            await tester.pump();
-            image = await (ss.state as ScreenshotableState).captureImage();
+            // await tester.pump();
+            // image = await (ss.state as ScreenshotableState).captureImage();
 
-            debugPrint('screenshot success');
+            var builder = ui.SceneBuilder();
+            var scene =
+                RendererBinding.instance.renderView.layer?.buildScene(builder);
+            var imageRaw = await scene?.toImage(
+                ui.window.physicalSize.width.toInt(),
+                ui.window.physicalSize.height.toInt());
+            scene?.dispose();
+
+            final byteData =
+                await imageRaw?.toByteData(format: ui.ImageByteFormat.png);
+
+            image = byteData?.buffer
+                .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes);
+
+            if (image != null) {
+              debugPrint('screenshot success');
+            } else {
+              debugPrint('screenshot null');
+            }
           } catch (e) {
             debugPrint('Screenshot failed $e');
           }
@@ -105,6 +125,10 @@ Future<void> main() async {
 
     await tester.pumpWidget(MyApp());
     await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ValueKey('modalButton')));
+    // tester.pumpAndSettle();
+
     expect(2 + 2, equals(4));
 
     // pattern default android
