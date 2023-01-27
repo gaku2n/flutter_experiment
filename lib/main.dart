@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_experiment/modal.dart';
-import 'package:flutter_experiment/second_page.dart';
 import 'package:screenshot/screenshot.dart';
-
-import 'screenshotable.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,8 +15,10 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final flavor = const String.fromEnvironment('FLAVOR');
+    debugPrint('flavor: $flavor');
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Demo $flavor',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -33,7 +31,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: Screenshotable(child: MyHomePage(title: 'screen shot demo')),
+      home: const MyHomePage(title: 'demo'),
     );
   }
 }
@@ -110,19 +108,6 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
-            ),
-            OutlinedButton(
-              key: ValueKey('secondPageButton'),
-              onPressed: () => Navigator.push(
-                context,
-                SecondScreen.route(),
-              ),
-              child: Text('２枚目'),
-            ),
-            ElevatedButton(
-              key: ValueKey('modalButton'),
-              onPressed: () => ModalWidget.show(context),
-              child: Text('モーダル'),
             ),
           ],
         ),
